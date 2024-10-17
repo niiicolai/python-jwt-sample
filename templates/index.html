@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My App</title>
+  </head>
+  <body>
+    <div>
+        <div id="login">
+            <h2>Login</h2>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>        
+        </div>
+
+        <div id="authenticated" style="display: none;">
+            <h2>Welcome back, <span id="username"></span></h2>
+        </div>
+    </div>
+
+    <script>
+        async function handleLogin(event) {
+            event.preventDefault();
+            const token = await login(event);
+            if (!token) return;
+            const me = await fetchAuthenticated(token);
+            if (!me) return;
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('authenticated').style.display = 'block';
+            document.getElementById('username').textContent = me;
+        }
+
+        async function fetchAuthenticated(token) {
+            const response = await fetch('/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!response.ok) {
+                alert(response.error);
+                return;
+            }
+
+            const data = await response.json();
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            const { username } = data;
+            if (!username) alert('No username received');
+            return username;
+        }
+
+        async function login(event) {
+            const form = event.target;
+            const data = new FormData(form);
+            const username = data.get('username');
+            const password = data.get('password');
+            if (!username || !password) {
+                alert('Please provide both username and password');
+                return;
+            }
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+            if (!response.ok) {
+                alert(response.error);
+                return;
+            }
+
+            const parsedData = await response.json();
+            if (parsedData.error) {
+                alert(parsedData.error);
+                return;
+            }
+
+            const { token } = parsedData;
+            if (!token) alert('No token received');
+            return token;
+        }
+    </script>
+  </body>
+</html>
