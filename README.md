@@ -1,5 +1,6 @@
 # Python JWT Demo
 A simple Python FastAPI application that demonstrates JWT authentication.
+Note: Uses https://pyjwt.readthedocs.io/en/stable/
 
 # Get Started
 
